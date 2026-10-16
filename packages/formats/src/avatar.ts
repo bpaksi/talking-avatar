@@ -92,9 +92,6 @@ export function effectiveMouthMode(manifest: { mouthMode?: unknown }): unknown {
   if (manifest.mouthMode === undefined) {
     return DEFAULT_MOUTH_MODE;
   }
-  if (isMouthMode(manifest.mouthMode)) {
-    return manifest.mouthMode;
-  }
   return manifest.mouthMode;
 }
 

@@ -14,6 +14,11 @@ type Manifest = {
   files?: string[];
   types?: string;
   exports?: unknown;
+  repository?: {
+    type?: string;
+    url?: string;
+    directory?: string;
+  };
   publishConfig?: {
     access?: string;
     types?: string;
@@ -93,6 +98,11 @@ describe("npm packaging", () => {
       );
       expect(manifest.version, name).toBe("0.1.0");
       expect(manifest.private, name).not.toBe(true);
+      expect(manifest.repository, name).toEqual({
+        type: "git",
+        url: "git+https://github.com/bpaksi/talking-avatar.git",
+        directory: `packages/${name}`,
+      });
     }
     const cli = readJson(resolve(root, "packages/cli/package.json"));
     expect(cli.private).toBe(true);
@@ -121,6 +131,7 @@ describe("npm packaging", () => {
     expect(release).not.toContain('"v*"');
     expect(release).toContain("id-token: write");
     expect(release).toContain("contents: read");
+    expect(release).toContain("if: github.ref == 'refs/heads/main'");
     expect(release).toContain("actions/setup-node@v6");
     expect(release).toContain("registry-url: https://registry.npmjs.org");
     expect(release).toContain("npm@11.5.1");
@@ -132,8 +143,12 @@ describe("npm packaging", () => {
     );
     expect(release).not.toContain("packages/cli");
     expect(release).toContain("pack --pack-destination");
-    expect(release).toContain("npm publish");
+    expect(release).toContain(
+      'if npm view "${name}@${ver}" version >/dev/null 2>&1; then',
+    );
+    expect(release).toContain('npm publish "$pkgdest"/*.tgz');
     expect(release).toContain("--provenance");
+    expect(release).not.toContain("pnpm -r run build");
     expect(release).not.toContain("NODE_AUTH_TOKEN");
     expect(release).not.toContain("NPM_TOKEN");
     expect(release).not.toContain("pnpm -r publish");
@@ -148,10 +163,13 @@ describe("npm packaging", () => {
       "utf8",
     );
     expect(src.startsWith('"use client";')).toBe(true);
-    const dist = readFileSync(
-      resolve(root, "packages/player/dist/index.js"),
-      "utf8",
-    );
+    const distPath = resolve(root, "packages/player/dist/index.js");
+    // Dist is produced by typecheck/build. `pnpm check` builds first; a
+    // bare `pnpm test` on a clean tree has no dist yet.
+    if (!existsSync(distPath)) {
+      return;
+    }
+    const dist = readFileSync(distPath, "utf8");
     expect(/^["']use client["'];/.test(dist)).toBe(true);
   });
 });

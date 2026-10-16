@@ -12,14 +12,17 @@ permissions:
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
           version: 10.33.4
-      # v6 + registry-url, with no registry auth env: npm can use OIDC.
-      # v4 wrote an empty auth-token line that skipped the token exchange.
+      # setup-node writes registry-url into .npmrc as an _authToken line
+      # that interpolates a placeholder auth env var. OIDC still works
+      # because npm >= 11.5.1 swaps in the GitHub OIDC token at publish
+      # time (v4 and v6 share this auth path).
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -45,7 +48,6 @@ jobs:
           done
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      - run: pnpm -r run build
       - name: Publish formats then player with provenance
         run: |
           set -euo pipefail
@@ -55,7 +57,14 @@ jobs:
           # protocol). npm publish of the tarball is the OIDC path (npm >= 11.5.1);
           # pnpm 10 still shells publish out to npm and is not relied on here.
           for pkg in packages/formats packages/player; do
-            tarball="$(node -p "const m=require('./${pkg}/package.json'); m.name.replaceAll('@','').replaceAll('/','-') + '-' + m.version + '.tgz'")"
-            pnpm --filter "./${pkg}" pack --pack-destination "$dest"
-            npm publish "${dest}/${tarball}" --access public --provenance
+            name="$(node -p "require('./${pkg}/package.json').name")"
+            ver="$(node -p "require('./${pkg}/package.json').version")"
+            if npm view "${name}@${ver}" version >/dev/null 2>&1; then
+              echo "skip ${name}@${ver} (already on npm)"
+              continue
+            fi
+            pkgdest="${dest}/$(basename "${pkg}")"
+            mkdir -p "$pkgdest"
+            pnpm --filter "./${pkg}" pack --pack-destination "$pkgdest"
+            npm publish "$pkgdest"/*.tgz --access public --provenance
           done
