@@ -146,6 +146,7 @@ export const castSchema = z.record(
       x: z.number().finite(),
       y: z.number().finite(),
     }),
+    captionTheme: z.string().min(1).optional(),
   }),
 );
 
