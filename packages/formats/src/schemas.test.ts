@@ -18,6 +18,37 @@ describe("schemas", () => {
     expect(shapeIdSchema.safeParse("OO").success).toBe(false);
   });
 
+  it("accepts an optional non-empty captionTheme on a cast speaker", () => {
+    const speaker = {
+      voice: { provider: "gemini", voiceId: "voice-1" },
+      portrait: "art/guide.png",
+      mouths: {
+        REST: "m/rest.png",
+        MBP: "m/mbp.png",
+        "CONS/EE": "m/cons-ee.png",
+        "EH/AE": "m/eh-ae.png",
+        AH: "m/ah.png",
+        "OH/ER": "m/oh-er.png",
+        "OO/W": "m/oo-w.png",
+        FV: "m/fv.png",
+      },
+      anchor: { x: 120, y: 210 },
+    };
+    const themed = castSchema.parse({
+      guide: { ...speaker, captionTheme: "gothic" },
+    });
+    expect(themed.guide?.captionTheme).toBe("gothic");
+    expect(castSchema.parse({ guide: speaker }).guide?.captionTheme).toBe(
+      undefined,
+    );
+    expect(
+      castSchema.safeParse({ guide: { ...speaker, captionTheme: "" } }).success,
+    ).toBe(false);
+    expect(
+      castSchema.safeParse({ guide: { ...speaker, captionTheme: 3 } }).success,
+    ).toBe(false);
+  });
+
   it("parses the narrator cast and the sample script", () => {
     const cast = castSchema.parse({
       narrator: {
