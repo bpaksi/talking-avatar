@@ -1,9 +1,10 @@
 name: release
 
+# Manual only. 0.1.0 of formats and player is published by hand (Track A
+# step 4), so a tag push must start nothing. Step 6 replaces this workflow
+# with npm trusted publishing and the tag trigger.
 on:
-  push:
-    tags:
-      - "v[0-9]*"
+  workflow_dispatch:
 
 permissions:
   contents: read
