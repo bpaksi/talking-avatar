@@ -1,0 +1,188 @@
+{
+  "metadata": {
+    "soundFile": "ts-keeper-002.wav",
+    "duration": 3.09
+  },
+  "mouthCues": [
+    {
+      "start": 0,
+      "end": 0.09,
+      "value": "D"
+    },
+    {
+      "start": 0.09,
+      "end": 0.18,
+      "value": "F"
+    },
+    {
+      "start": 0.18,
+      "end": 0.27,
+      "value": "E"
+    },
+    {
+      "start": 0.27,
+      "end": 0.36,
+      "value": "B"
+    },
+    {
+      "start": 0.36,
+      "end": 0.45,
+      "value": "C"
+    },
+    {
+      "start": 0.45,
+      "end": 0.54,
+      "value": "H"
+    },
+    {
+      "start": 0.54,
+      "end": 0.63,
+      "value": "D"
+    },
+    {
+      "start": 0.63,
+      "end": 0.72,
+      "value": "C"
+    },
+    {
+      "start": 0.72,
+      "end": 0.81,
+      "value": "E"
+    },
+    {
+      "start": 0.81,
+      "end": 0.99,
+      "value": "B"
+    },
+    {
+      "start": 0.99,
+      "end": 1.08,
+      "value": "H"
+    },
+    {
+      "start": 1.08,
+      "end": 1.17,
+      "value": "D"
+    },
+    {
+      "start": 1.17,
+      "end": 1.25,
+      "value": "C"
+    },
+    {
+      "start": 1.25,
+      "end": 1.28,
+      "value": "X"
+    },
+    {
+      "start": 1.28,
+      "end": 1.37,
+      "value": "E"
+    },
+    {
+      "start": 1.37,
+      "end": 1.46,
+      "value": "B"
+    },
+    {
+      "start": 1.46,
+      "end": 1.55,
+      "value": "F"
+    },
+    {
+      "start": 1.55,
+      "end": 1.61,
+      "value": "X"
+    },
+    {
+      "start": 1.61,
+      "end": 1.7,
+      "value": "A"
+    },
+    {
+      "start": 1.7,
+      "end": 1.79,
+      "value": "D"
+    },
+    {
+      "start": 1.79,
+      "end": 1.88,
+      "value": "C"
+    },
+    {
+      "start": 1.88,
+      "end": 2.06,
+      "value": "B"
+    },
+    {
+      "start": 2.06,
+      "end": 2.15,
+      "value": "C"
+    },
+    {
+      "start": 2.15,
+      "end": 2.24,
+      "value": "H"
+    },
+    {
+      "start": 2.24,
+      "end": 2.31,
+      "value": "D"
+    },
+    {
+      "start": 2.31,
+      "end": 2.34,
+      "value": "X"
+    },
+    {
+      "start": 2.34,
+      "end": 2.43,
+      "value": "B"
+    },
+    {
+      "start": 2.43,
+      "end": 2.52,
+      "value": "E"
+    },
+    {
+      "start": 2.52,
+      "end": 2.61,
+      "value": "A"
+    },
+    {
+      "start": 2.61,
+      "end": 2.7,
+      "value": "C"
+    },
+    {
+      "start": 2.7,
+      "end": 2.79,
+      "value": "E"
+    },
+    {
+      "start": 2.79,
+      "end": 2.88,
+      "value": "B"
+    },
+    {
+      "start": 2.88,
+      "end": 2.96,
+      "value": "F"
+    },
+    {
+      "start": 2.96,
+      "end": 2.97,
+      "value": "X"
+    },
+    {
+      "start": 2.97,
+      "end": 3.03,
+      "value": "A"
+    },
+    {
+      "start": 3.03,
+      "end": 3.09,
+      "value": "X"
+    }
+  ]
+}

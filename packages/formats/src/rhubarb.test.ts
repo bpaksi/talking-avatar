@@ -24,7 +24,7 @@ describe("Rhubarb JSON", () => {
       { time: 0.42, shape: "MBP" },
       { time: 0.55, shape: "OO/W" },
       { time: 1.1, shape: "FV" },
-      { time: 1.4, shape: "EH/AE" },
+      { time: 1.4, shape: "CONS/EE" },
       { time: 1.7, shape: "CONS/EE" },
     ]);
     expect(mapped.every((cue) => !("end" in cue))).toBe(true);

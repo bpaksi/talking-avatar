@@ -1,0 +1,38 @@
+{
+  "id": "keeper",
+  "name": "The Keeper (placeholder)",
+  "portrait": "portrait.png",
+  "anchor": "anchor.json",
+  "mouthMode": "frame",
+  "mouths": {
+    "X": "mouths/REST.png",
+    "A": "mouths/MBP.png",
+    "B": "mouths/CONS-EE.png",
+    "C": "mouths/EH-AE.png",
+    "D": "mouths/AH.png",
+    "E": "mouths/OH-ER.png",
+    "F": "mouths/OO-W.png",
+    "G": "mouths/FV.png",
+    "H": "mouths/CONS-EE.png"
+  },
+  "lines": [
+    {
+      "line_id": "ts-keeper-001",
+      "audio": "lines/ts-keeper-001.m4a",
+      "timing": "lines/ts-keeper-001.json",
+      "text": "Hello, I am a placeholder voice. [pause 0.5] Watch my mouth move."
+    },
+    {
+      "line_id": "ts-keeper-002",
+      "audio": "lines/ts-keeper-002.m4a",
+      "timing": "lines/ts-keeper-002.json",
+      "text": "Every word you hear should open and close my lips in time."
+    },
+    {
+      "line_id": "ts-keeper-003",
+      "audio": "lines/ts-keeper-003.m4a",
+      "timing": "lines/ts-keeper-003.json",
+      "text": "That is all for now. Tap again to hear me from the start."
+    }
+  ]
+}
