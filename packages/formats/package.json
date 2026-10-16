@@ -1,7 +1,7 @@
 {
   "name": "@talking-avatar/formats",
-  "version": "0.0.0",
-  "description": "Schemas and lip-sync timing helpers for talking-avatar.",
+  "version": "0.1.0",
+  "description": "Asset contract schemas, the avatar folder validator, and lip-sync timing helpers for talking-avatar.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -15,6 +15,14 @@
       },
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./node": {
+      "development": {
+        "types": "./src/node.ts",
+        "default": "./src/node.ts"
+      },
+      "types": "./dist/node.d.ts",
+      "default": "./dist/node.js"
     }
   },
   "types": "./dist/index.d.ts",
@@ -29,6 +37,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
+      },
+      "./node": {
+        "types": "./dist/node.d.ts",
+        "default": "./dist/node.js"
       }
     }
   },

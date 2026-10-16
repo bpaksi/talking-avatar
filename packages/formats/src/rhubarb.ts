@@ -38,7 +38,7 @@ const LETTER_TO_SHAPE: Record<Exclude<RhubarbLetter, "H">, ShapeId> = {
 };
 
 export function mapRhubarbLetter(value: RhubarbLetter, hasL: boolean): ShapeId {
-  if (value === "H") return hasL ? "L" : "EH/AE";
+  if (value === "H") return hasL ? "L" : "CONS/EE";
   return LETTER_TO_SHAPE[value];
 }
 

@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "soundFile": "ts-keeper-001.wav",
+    "duration": 1
+  },
+  "mouthCues": [
+    {
+      "start": 0,
+      "end": 0.2,
+      "value": "X"
+    },
+    {
+      "start": 0.2,
+      "end": 0.5,
+      "value": "D"
+    },
+    {
+      "start": 0.4,
+      "end": 0.8,
+      "value": "B"
+    },
+    {
+      "start": 0.8,
+      "end": 1,
+      "value": "X"
+    }
+  ]
+}

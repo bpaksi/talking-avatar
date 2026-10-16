@@ -6,6 +6,23 @@ export {
   DEFAULT_FRAME_RATE,
 } from "./anticipation.js";
 export {
+  type Anchor,
+  type AvatarLine,
+  type AvatarManifest,
+  type AvatarRule,
+  anchorSchema,
+  avatarLineSchema,
+  avatarManifestSchema,
+  avatarMouthsSchema,
+  DEFAULT_MOUTH_MODE,
+  effectiveMouthMode,
+  isAvatarRelativePath,
+  MOUTH_MODES,
+  type MouthMode,
+  mouthFileName,
+  mouthModeSchema,
+} from "./avatar.js";
+export {
   type TimingCacheInput,
   type TtsCacheInput,
   timingCacheMaterial,
@@ -42,6 +59,7 @@ export {
   splicePcm16,
 } from "./pcm.js";
 export { sampleAudioClock, shapeAt, visibleShape } from "./playback.js";
+export { type PngInfo, readPngInfo } from "./png.js";
 export {
   type Cue,
   mapRhubarbJson,

@@ -87,13 +87,36 @@ export const rhubarbJsonSchema = z.object({
     soundFile: z.string(),
     duration: z.number().nonnegative(),
   }),
-  mouthCues: z.array(
-    z.object({
-      start: z.number().nonnegative(),
-      end: z.number().nonnegative(),
-      value: z.enum(RHUBARB_LETTERS),
+  mouthCues: z
+    .array(
+      z.object({
+        start: z.number().nonnegative(),
+        end: z.number().nonnegative(),
+        value: z.enum(RHUBARB_LETTERS),
+      }),
+    )
+    .superRefine((cues, ctx) => {
+      // Asset contract rule 6: in order, no overlap.
+      cues.forEach((cue, index) => {
+        if (cue.end < cue.start) {
+          ctx.addIssue({
+            code: "custom",
+            message: `cue ${index} ends before it starts`,
+            path: [index, "end"],
+            params: { rule: 6 },
+          });
+        }
+        const previous = cues[index - 1];
+        if (previous !== undefined && cue.start < previous.end) {
+          ctx.addIssue({
+            code: "custom",
+            message: `cue ${index} starts at ${cue.start} before cue ${index - 1} ends at ${previous.end}`,
+            path: [index, "start"],
+            params: { rule: 6 },
+          });
+        }
+      });
     }),
-  ),
 });
 
 export const mouthsSchema = z.strictObject({

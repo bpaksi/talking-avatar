@@ -1,7 +1,7 @@
 {
   "name": "@talking-avatar/player",
-  "version": "0.0.0",
-  "description": "Playback helpers for talking-avatar.",
+  "version": "0.1.0",
+  "description": "<TalkingAvatar> React player for talking-avatar character folders.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -33,17 +33,26 @@
     }
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p example/tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "prepack": "pnpm run build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "example": "vite --config example/vite.config.ts"
   },
   "dependencies": {
     "@talking-avatar/formats": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "typescript": "7.0.2",
+    "vite": "8.3.1",
     "vitest": "5.0.5"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
   }
 }

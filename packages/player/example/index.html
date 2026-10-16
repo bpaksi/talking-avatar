@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TalkingAvatar example</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #11151f;
+        color: #e8e4da;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+      }
+      main {
+        max-width: 420px;
+        margin: 0 auto;
+      }
+      .avatar figcaption {
+        min-height: 3em;
+        margin-top: 12px;
+        font-size: 1.1rem;
+        line-height: 1.4;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 16px 0;
+      }
+      .controls button {
+        min-height: 44px;
+        padding: 0 16px;
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="root"></main>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>
