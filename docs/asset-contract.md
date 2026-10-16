@@ -42,6 +42,7 @@ avatars/<id>/
 | `portrait` | string | path to the portrait PNG |
 | `anchor` | string | path to `anchor.json` |
 | `mouths` | object | all 9 Rhubarb letters `X A B C D E F G H` → mouth file path |
+| `mouthMode` | `"frame"` \| `"overlay"`, optional | default `"frame"`; see *Mouth mode* |
 | `captionTheme` | string, optional | non-empty if present |
 | `lines` | array | `{ line_id, audio, timing, text }` |
 
@@ -59,7 +60,7 @@ Letter map (fixed for v1):
 | G | `FV` | `mouths/FV.png` |
 | H | `CONS/EE` | `mouths/CONS-EE.png` |
 
-Note: H → `CONS/EE` here differs from P1 (H → `EH/AE` when the kit has no `L`). v1 of this contract uses `CONS/EE`; P1 S4 should be aligned to it.
+Note: H → `CONS/EE` replaces the earlier P1 rule (H → `EH/AE` when the kit has no `L`). P1 is aligned to this contract.
 
 Each `lines[]` entry:
 
@@ -68,15 +69,24 @@ Each `lines[]` entry:
 - `timing`: path to `lines/<line_id>.json`.
 - `text`: the script line, `[pause N]` markup included. The player strips markup for captions.
 
+## Mouth mode
+
+`manifest.json` has an optional `mouthMode`: `"frame"` (default) or `"overlay"`.
+
+- `frame`: every mouth file is the full portrait at the portrait's exact pixel size. The player swaps the whole image. The slice (the Keeper) uses this.
+- `overlay` (later): every mouth file is a transparent PNG cropped to the anchor box. The player draws it over the portrait in the anchor box.
+
+The validator checks mouth image sizes for the chosen mode. `anchor.json` is required in both modes.
+
 ## anchor.json
 
 ```json
 { "x": 0.508, "y": 0.649, "w": 0.26, "h": 0.29 }
 ```
 
-All four values are fractions `0..1` of the portrait's width (`x`, `w`) and height (`y`, `h`). `x`, `y` is the **mouth center**; `w`, `h` is the mouth image's drawn size. Every mouth image is drawn into this same box, so swaps do not jitter.
+All four values are fractions `0..1` of the portrait's width (`x`, `w`) and height (`y`, `h`). `x`, `y` is the **mouth center**; `w`, `h` is the mouth box size. In `overlay` mode every mouth image is drawn into this same box, so swaps do not jitter. In `frame` mode the mouth files are full portraits and the box only records where the mouth is.
 
-(P1 uses a pixel anchor in `cast.yaml`. This contract uses fractions so the portrait can scale.)
+The anchor is in fractions, not pixels, so the portrait can scale. P1's `cast.yaml` uses the same fractions.
 
 ## Timing
 
@@ -103,8 +113,9 @@ Times are seconds. `metadata.soundFile` is informational; use a relative name, n
 3. Each `line_id` is unique and has both `audio` and `timing`.
 4. `anchor.x`, `y`, `w`, `h` are numbers in `0..1`.
 5. Every cue `value` is one of `A B C D E F G H X`.
-6. Cues are monotonic: `start <= end`, and each cue's `start >= ` the previous cue's `start` (no overlap: `start >=` previous `end`).
+6. Cues are in order with no overlap: each cue has `start <= end`, and each cue's `start >=` the previous cue's `end`.
 7. `captionTheme`, if present, is a non-empty string.
+8. `mouthMode`, if present, is `"frame"` or `"overlay"`, and every mouth image has the size that mode requires (see *Mouth mode*).
 
 Errors name the file and `line_id`.
 
@@ -118,6 +129,7 @@ Errors name the file and `line_id`.
   "name": "The Keeper",
   "portrait": "portrait.png",
   "anchor": "anchor.json",
+  "mouthMode": "frame",
   "mouths": {
     "X": "mouths/REST.png",
     "A": "mouths/MBP.png",
@@ -160,7 +172,7 @@ Errors name the file and `line_id`.
 
 ## Delivery
 
-Illusionist produces, per character: `portrait.png`, the 8 mouth PNGs, `anchor.json`, Rhubarb timing JSON per line, WAV masters (kept in `masters/`), and `.m4a` per line.
+Illusionist produces, per character: `portrait.png`, the 8 mouth PNGs (sized for the `mouthMode`), `anchor.json`, Rhubarb timing JSON per line, WAV masters (kept in `masters/`), and `.m4a` per line.
 
 Before merge, assets pass the gate:
 
@@ -170,12 +182,3 @@ Before merge, assets pass the gate:
 - **Bob**: spot-check on the target device.
 
 The S2 validator must pass first.
-
-## Mouth mode
-
-`manifest.json` has `mouthMode`: `"frame"` (default) or `"overlay"`.
-
-- `frame`: every mouth file is the full portrait at the portrait's exact pixel size. The player swaps the whole image. The slice (the Keeper) uses this.
-- `overlay` (later): every mouth file is a transparent PNG cropped to the anchor box. The player draws it over the portrait at the anchor.
-
-The validator checks mouth image sizes for the chosen mode. `anchor.json` is required in both modes.

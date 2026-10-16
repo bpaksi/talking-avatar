@@ -12,7 +12,7 @@ Background and rationale for the mouth set, timing and playback rules: [docs/lip
 
 ## First slice (S2 + thin S5, early 0.1.0)
 
-Order changed for a first consumer (Bloodtower): S2, then a thin S5, then an early 0.1.0 publish of `@talking-avatar/formats` and `@talking-avatar/player` (S7 moved earlier; `@talking-avatar/cli` ships later). The slice uses the [asset contract v1](../docs/asset-contract.md). First publish is manual; later releases use npm trusted publishing (GitHub OIDC, no `NPM_TOKEN`).
+Order changed for a first consumer (Bloodtower): S2, then a thin S5, then an early 0.1.0 publish of `@talking-avatar/formats` and `@talking-avatar/player` (S7 moved earlier; `@talking-avatar/cli` ships later). The slice uses the [asset contract v1](../docs/asset-contract.md). Where this plan and the contract disagree, the contract wins. First publish is manual; later releases use npm trusted publishing (GitHub OIDC, no `NPM_TOKEN`).
 
 - [docs/asset-contract.md](../docs/asset-contract.md)
 - [docs/handoff/track-a-player.md](../docs/handoff/track-a-player.md)
@@ -31,7 +31,7 @@ Order changed for a first consumer (Bloodtower): S2, then a thin S5, then an ear
 ## Pipeline
 
 ```text
-generate (TTS) --> time (Rhubarb + whisper) --> play (<SpeakingAvatar>)
+generate (TTS) --> time (Rhubarb + whisper) --> play (<TalkingAvatar>)
 \_______ cached by line_id, ahead of time ______/
 ```
 
@@ -60,9 +60,9 @@ Per line:
 - unknown voice provider, or a speaker with no voice ID;
 - invalid `[pause N]` markup;
 - estimated duration **greater than 20 s**. The estimate is `sum of pause seconds + (spoken non-whitespace Unicode code points / 12.5)`. 12.5 characters per second is about 150 words per minute at 5 characters per word. A line of exactly 20 s passes; 20.01 s fails. This estimate is only a guard. It is not the timing authority;
-- invalid mouth kit: every mouth image is a PNG of the same pixel width and height with an alpha channel, and `anchor` is present and inside the image (`0 <= x < width`, `0 <= y < height`).
+- invalid mouth kit: every mouth image is a PNG with the size its `mouthMode` requires (`frame`: the portrait's exact pixel size; `overlay`: a transparent PNG cropped to the anchor box), and `anchor` is present with `x`, `y`, `w`, `h` all fractions in `0..1` (see the [asset contract](../docs/asset-contract.md#mouth-mode)).
 
-Registration to the anchor is a **draw-time** offset: the player draws each mouth so that anchor pixel sits on the same portrait point. Pre-flight does not infer registration from pixel bytes.
+Registration is a **draw-time** rule: in `frame` mode the player swaps the whole portrait-sized image; in `overlay` mode it draws each mouth into the same anchor box on the portrait. Pre-flight does not infer registration from pixel bytes.
 
 ## TTS providers
 
@@ -121,7 +121,7 @@ An **8-shape required set**, mapped from Rhubarb Lip Sync’s letters (A–H plu
 
 **Optional extensions**, added only when testing shows a real gap:
 
-- `L` — Rhubarb H (long L, tongue behind upper teeth). Until a kit has `L`, H maps to `EH/AE`.
+- `L` — Rhubarb H (long L, tongue behind upper teeth). Until a kit has `L`, H maps to `CONS/EE` ([asset contract v1](../docs/asset-contract.md#manifestjson)).
 - `TH` — Rhubarb has no TH shape; Rhubarb times TH as B, so `TH` is placed via overrides. Without it, TH stays `CONS/EE`.
 
 Rhubarb is run with `--extendedShapes GX` by default (`GHX` when the kit has `L`).
@@ -130,7 +130,7 @@ All mouth images are drawn on the **same head** and registered to **one shared a
 
 ### Art-kit spec
 
-Every speaker’s kit provides these images, all the same pixel size, PNG with an alpha channel, positioned on the shared anchor at draw time:
+Every speaker’s kit provides these images as PNGs sized for its `mouthMode` (`frame`: full portraits at the portrait’s pixel size; `overlay`: transparent crops of the anchor box):
 
 | Shape | Sounds | Visual pose |
 | --- | --- | --- |
@@ -217,7 +217,8 @@ narrator:
     OO/W: m/oo-w.png
     FV: m/fv.png
     # optional: L, TH
-  anchor: { x: 120, y: 210 }
+  mouthMode: frame # or overlay
+  anchor: { x: 0.508, y: 0.649, w: 0.26, h: 0.29 } # fractions of the portrait, as in anchor.json
 ```
 
 `script.yaml`:
@@ -272,7 +273,7 @@ All formats (cast, script, overrides, line.json, Rhubarb JSON) are validated wit
 
 ## Player
 
-`<SpeakingAvatar line={lineJson} cast={...} />` plays a `line.json`:
+`<TalkingAvatar manifest={...} lineId="..." baseUrl="/avatars/<id>/" onEnd={...} />` plays one line of a character folder in the [asset contract](../docs/asset-contract.md) layout. The first slice reads the line's Rhubarb JSON from the manifest. Word timings and caption-only lines (`audio: null`) arrive with the CLI's `line.json`:
 
 - **Master clock while audio exists:** a per-frame callback (requestAnimationFrame or the host equivalent) **samples `audio.currentTime`**. It binary-searches the cue track for the latest cue at or before that sample. It does **not** use the `timeupdate` event as the driver (`timeupdate` is too coarse). It does **not** advance a separate elapsed-time clock while an audio element is playing. Pause, seek, buffering, and playback-rate changes stay in sync because they all move `currentTime`.
 - **Before the first cue** the mouth is `REST`.
@@ -292,7 +293,7 @@ Published to **npm** from this pnpm workspace. Consumers install an exact versio
 | --- | --- | --- |
 | repo root | `talking-avatar` | no — `"private": true` |
 | `packages/formats` | `@talking-avatar/formats` | yes |
-| `packages/cli` | `@talking-avatar/cli` | yes |
+| `packages/cli` | `@talking-avatar/cli` | yes, from a later release (`"private": true` until then; not in 0.1.0) |
 | `packages/player` | `@talking-avatar/player` | yes |
 
 S7 confirms these names are free on npm before the first publish. Working versions in the scaffold are `0.0.0`.
@@ -308,17 +309,17 @@ Every publishable `package.json` has:
 
 Root `package.json` sets `"private": true`, `"packageManager": "pnpm@10.33.4"`, and `"license": "MIT"`. `pnpm check` is lint + typecheck + test. `pnpm-lock.yaml` is committed.
 
-Release workflow (`.github/workflows/release.yml`):
+`0.1.0` of `formats` and `player` is published by hand ([Track A](../docs/handoff/track-a-player.md) steps 3–4). Every later release goes through the release workflow (`.github/workflows/release.yml`) with npm trusted publishing:
 
 - Trigger: tags matching `v[0-9]*` (so `voice` and `vlatest` do not run). A bash step then requires `^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$` and exits non-zero otherwise. `v0.1.0` and `v1.2.3-beta.1` publish; `v1`, `v1.2`, and `version-1` do not.
 - `pnpm/action-setup@v4` with `version: 10.33.4`, the same pin as `packageManager`. Node 22. `pnpm install --frozen-lockfile`, then `pnpm check`, then `pnpm -r run build`.
-- Publish only the workspace packages, not the private root:
+- Publish only the workspace packages, not the private root or any private package:
 
 ```sh
 pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-checks
 ```
 
-- Each publishable package’s `version` must equal the tag with the leading `v` removed. `NPM_TOKEN` is the npm token. `id-token: write` is the provenance permission.
+- Each non-private package’s `version` must equal the tag with the leading `v` removed. There is no `NPM_TOKEN` or `NODE_AUTH_TOKEN`: npm trusted publishing (GitHub OIDC) authenticates the publish, and `id-token: write` grants both the OIDC token and provenance. Trusted publishing needs npm >= 11.5.
 - CI `check` (`.github/workflows/check.yml`) runs the same pnpm pin and `pnpm check` on pull requests and on pushes to `main`.
 
 ## Stack
@@ -344,7 +345,7 @@ pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-ch
 ### S2: Formats, Zod schemas + validation CLI
 - Depends on: S1
 - Touches: packages/formats/**, packages/cli/src/validate/**
-- Acceptance: cast, script, overrides, line.json, and Rhubarb JSON match the *Formats* and *Rhubarb JSON* sections. Overrides are the object `{ cues, remove }`, not an array. `line.json.text` is required and `audio` is `string | null`. Shape names are the shared enum (8 required, `L` and `TH` optional). `pnpm talk validate` reports each pre-flight error with file and line id: missing mouth, unknown or untagged speaker, unknown provider or missing voice ID, invalid pause markup, estimate `> 20` using the 12.5 characters/second formula, mismatched PNG sizes, PNG without an alpha channel, anchor missing or outside the image. It does not claim to see anchor registration from pixels. Tests use generated placeholder images.
+- Acceptance: cast, script, overrides, line.json, and Rhubarb JSON match the *Formats* and *Rhubarb JSON* sections. Overrides are the object `{ cues, remove }`, not an array. `line.json.text` is required and `audio` is `string | null`. Shape names are the shared enum (8 required, `L` and `TH` optional). The `manifest.json`, `anchor.json` and timing files follow the [asset contract](../docs/asset-contract.md) and its validation rules 1–8. `pnpm talk validate` reports each pre-flight error with file and line id: missing mouth, unknown or untagged speaker, unknown provider or missing voice ID, invalid pause markup, estimate `> 20` using the 12.5 characters/second formula, a mouth image of the wrong size for its `mouthMode`, an `overlay` mouth without an alpha channel, anchor missing or a value outside `0..1`. It does not claim to see anchor registration from pixels. Tests use generated placeholder images.
 
 ### S3: TTS providers + cache
 - Depends on: S2
@@ -354,12 +355,12 @@ pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-ch
 ### S4: Rhubarb + whisper timing → line.json
 - Depends on: S3
 - Touches: packages/cli/src/align/**, packages/cli/src/build/**
-- Acceptance: Rhubarb runs on the WAV with `--dialogFile` equal to the stripped spoken text (`Welcome. Follow me.` for the sample) and `--exportFormat json`. Fixtures are Rhubarb documents `{ metadata, mouthCues: [{ start, end, value }] }` with letter values. Mapping is A `MBP`, B `CONS/EE`, C `EH/AE`, D `AH`, E `OH/ER`, F `OO/W`, G `FV`, H `L` or `EH/AE` when the kit has no `L`, X `REST`; `end` is dropped. Overrides use the object schema: replace, insert, remove (remove wins when a time is in both), then re-sort. Anticipation then applies the `2/24` s default lead to non-override `MBP` and `OO/W`, clamped at 0, and leaves a cue unshifted when the previous cue already occupies the lead window. Timing cache material includes `anticipationFrames`, `frameRate`, and the Rhubarb version. Word timings come from faster-whisper when audio exists; whisper failure still fills fallback `words` and keeps `text`. `pnpm talk build` writes a valid `line.json` per line. Adapters are mocked in CI.
+- Acceptance: Rhubarb runs on the WAV with `--dialogFile` equal to the stripped spoken text (`Welcome. Follow me.` for the sample) and `--exportFormat json`. Fixtures are Rhubarb documents `{ metadata, mouthCues: [{ start, end, value }] }` with letter values. Mapping is A `MBP`, B `CONS/EE`, C `EH/AE`, D `AH`, E `OH/ER`, F `OO/W`, G `FV`, H `L`, or `CONS/EE` when the kit has no `L` (asset contract v1), X `REST`; `end` is dropped. Overrides use the object schema: replace, insert, remove (remove wins when a time is in both), then re-sort. Anticipation then applies the `2/24` s default lead to non-override `MBP` and `OO/W`, clamped at 0, and leaves a cue unshifted when the previous cue already occupies the lead window. Timing cache material includes `anticipationFrames`, `frameRate`, and the Rhubarb version. Word timings come from faster-whisper when audio exists; whisper failure still fills fallback `words` and keeps `text`. `pnpm talk build` writes a valid `line.json` per line. Adapters are mocked in CI.
 
-### S5: `<SpeakingAvatar>` React component
+### S5: `<TalkingAvatar>` React component
 - Depends on: S2
 - Touches: packages/player/**
-- Acceptance: a per-frame callback samples `audio.currentTime` and binary-searches the latest cue at or before it (unit-tested, including seek, pause, and playback-rate changes). `timeupdate` is not the driver. No separate elapsed clock while audio plays. Before the first cue the mouth is `REST`. All mouth images share the anchor at draw time (no layout shift on swap). Captions use `line.text` with pause markup stripped and follow the same audio clock. `audio: null` or a failed audio element shows that caption only, holds `REST`, and highlights words from the fallback timings on the caption clock. `prefers-reduced-motion` holds `REST` and still shows captions. No network calls during playback. Example page with placeholder art for `narrator` and `guide`.
+- Acceptance: a per-frame callback samples `audio.currentTime` and binary-searches the latest cue at or before it (unit-tested, including seek, pause, and playback-rate changes). `timeupdate` is not the driver. No separate elapsed clock while audio plays. Before the first cue the mouth is `REST`. Mouth swaps follow the `mouthMode`: `frame` swaps the whole portrait-sized image, `overlay` draws into the anchor box (no layout shift on swap either way). Captions use `line.text` with pause markup stripped and follow the same audio clock. `audio: null` or a failed audio element shows that caption only, holds `REST`, and highlights words from the fallback timings on the caption clock. `prefers-reduced-motion` holds `REST` and still shows captions. No network calls during playback. Example page with placeholder art for `narrator` and `guide`.
 
 ### S6: `--mp4` render
 - Depends on: S4, S5
@@ -367,6 +368,6 @@ pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-ch
 - Acceptance: produces an MP4 whose duration matches the audio; skipped in CI when ffmpeg/Playwright browsers are absent, covered by unit tests of the command builder.
 
 ### S7: Release v0.1.0 to npm + usage docs
-- Depends on: S6
+- Depends on: S2, S5 (moved earlier for the first slice; see *First slice*)
 - Touches: README.md, docs/**, CHANGELOG.md, .github/workflows/release.yml, packages/*/package.json
-- Acceptance: the three scoped names are confirmed available on npm (or renamed in this step if one is taken). The release workflow publishes only `packages/*`, on a semver tag `vMAJOR.MINOR.PATCH` with optional prerelease, with `--provenance` and `NPM_TOKEN`. The tag version equals each publishable package version. `v0.1.0` is on npm with provenance, and each tarball contains the MIT `LICENSE`. README covers install from npm, file formats, the art-kit spec, CLI, component usage, and external tool setup. A fresh example project installed from npm builds using only the docs.
+- Acceptance: the three scoped names are confirmed available on npm (or renamed in this step if one is taken). `@talking-avatar/formats@0.1.0` and `@talking-avatar/player@0.1.0` are on npm, published by hand, and each tarball contains the MIT `LICENSE`; `@talking-avatar/cli` stays `"private": true`. Both packages have a trusted publisher and allow no tokens. The release workflow publishes only non-private `packages/*` on a semver tag `vMAJOR.MINOR.PATCH` with optional prerelease, through trusted publishing with `--provenance` and no `NPM_TOKEN`; the tag version equals each non-private package version. The first tagged release after `0.1.0` shows provenance on npm. README covers install from npm, file formats, the art-kit spec, CLI, component usage, and external tool setup. A fresh example project installed from npm builds using only the docs.

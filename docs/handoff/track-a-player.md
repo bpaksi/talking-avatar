@@ -9,9 +9,9 @@ Goal: ship `@talking-avatar/formats` and `@talking-avatar/player` 0.1.0 early so
 - Runs: cloud
 - Touches: `packages/formats/**`, `packages/formats/fixtures/keeper/**`
 - Work:
-  - Zod schemas + TS types for `manifest.json`, `anchor.json`, Rhubarb JSON, per the contract.
-  - `validateAvatar(dir)` (Node) applying all contract rules; returns a list of errors with file and `line_id`.
-  - Fixture set: the Keeper folder in contract layout (small placeholder or real files). Add negative fixtures: missing letter, missing file, duplicate `line_id`, anchor out of range, bad cue letter, non-monotonic cues.
+  - Zod schemas + TS types for `manifest.json` (including optional `mouthMode`, default `"frame"`), `anchor.json`, Rhubarb JSON, per the contract.
+  - `validateAvatar(dir)` (Node) applying contract rules 1–8; returns a list of errors with file and `line_id`.
+  - Fixture set: a `keeper` folder in contract layout with `mouthMode: "frame"`, built from small generated placeholder images and audio. No real Bloodtower art, audio or script (P1: consumer assets never live in this repo). Add negative fixtures: missing letter, missing file, duplicate `line_id`, anchor out of range, bad cue letter, overlapping cues, a mouth image of the wrong size for its `mouthMode`, an unknown `mouthMode`.
 - Acceptance:
   - `pnpm check` green.
   - Keeper fixture validates with zero errors.
@@ -24,7 +24,7 @@ Goal: ship `@talking-avatar/formats` and `@talking-avatar/player` 0.1.0 early so
 - Work: `<TalkingAvatar manifest={...} lineId="ts-keeper-001" onEnd={() => {}} />`
   - Plays the line's `.m4a` in an `<audio>` element.
   - Per frame (requestAnimationFrame), samples `audio.currentTime`, binary-searches the latest cue at or before it, shows that letter's mouth. `REST` before the first cue and after end.
-  - Mouth drawn over the portrait in the anchor box (fractions → % positioning), so it scales with the portrait.
+  - `mouthMode: "frame"` (the slice): each mouth file is a full portrait, so the player swaps the whole image in the portrait's box and it scales with the portrait. `overlay` (mouth drawn into the anchor box, fractions → % positioning) can wait until a kit needs it.
   - Preloads all mouth images; no network calls during playback beyond the audio.
   - Basic caption: line `text` with `[pause N]` stripped. Themes later (`captionTheme` ignored for now).
   - Calls `onEnd` when audio ends.
@@ -37,8 +37,8 @@ Goal: ship `@talking-avatar/formats` and `@talking-avatar/player` 0.1.0 early so
 ## Step 3: package prep for 0.1.0
 
 - Runs: cloud
-- Touches: `packages/formats/package.json`, `packages/player/package.json`, `CHANGELOG.md`, `README.md`
-- Work: set `version` to `0.1.0` in both; confirm `files`, `exports`, `types`, `publishConfig.access: "public"`, `LICENSE` copy; `react` as a peer dependency of the player. Leave `@talking-avatar/cli` at `0.0.0` (or `"private": true` for now) so it does not publish.
+- Touches: `packages/formats/package.json`, `packages/player/package.json`, `packages/cli/package.json`, `.github/workflows/release.yml`, `CHANGELOG.md`, `README.md`
+- Work: set `version` to `0.1.0` in both; confirm `files`, `exports`, `types`, `publishConfig.access: "public"`, `LICENSE` copy; `react` as a peer dependency of the player. Set `"private": true` on `@talking-avatar/cli` so `pnpm -r publish` skips it (a `0.0.0` version alone does not stop a publish). The existing `release.yml` runs on every `v*` tag, uses `NPM_TOKEN`, and checks the cli version too, so switch its trigger to `workflow_dispatch` only until step 6 replaces it. The step 4 tag then starts nothing.
 - Acceptance: `pnpm -r --filter "./packages/formats" --filter "./packages/player" pack` produces tarballs containing `dist` and `LICENSE`; `pnpm check` green; PR merged to `main`.
 
 ## Step 4: first publish by hand
@@ -57,7 +57,7 @@ git tag v0.1.0 && git push origin v0.1.0
 ```
 
 - Acceptance: `npm view @talking-avatar/formats@0.1.0` and `npm view @talking-avatar/player@0.1.0` resolve; a scratch project can `pnpm add @talking-avatar/player@0.1.0`.
-- Note: the tag push must not trigger a second publish. Either add the release workflow after this step, or have it skip versions already on npm.
+- Note: the tag push must not trigger a second publish. Step 3 turned off the tag trigger in `release.yml`; check that no workflow run starts for `v0.1.0`.
 
 ## Step 5: npm trusted publishing
 
@@ -68,7 +68,7 @@ git tag v0.1.0 && git push origin v0.1.0
 ## Step 6: release workflow (OIDC, provenance)
 
 - Runs: cloud
-- Touches: `.github/workflows/release.yml`
+- Touches: `.github/workflows/release.yml`, `scripts/check-versions.mjs` (new)
 - Outline:
 
 ```yaml
@@ -99,7 +99,7 @@ jobs:
       - run: pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-checks
 ```
 
-  No `NPM_TOKEN` / `NODE_AUTH_TOKEN`. Private or `0.0.0` packages are skipped.
+  No `NPM_TOKEN` / `NODE_AUTH_TOKEN`. `pnpm -r publish` skips private packages, and `check-versions.mjs` checks only the non-private `packages/*` against the tag. Before relying on it, confirm that the pinned pnpm publishes through npm's OIDC flow. If it does not, publish each package with `npm publish --provenance` instead.
 - Acceptance: a `v0.1.1` (or prerelease) tag publishes via OIDC with a provenance badge on npm; a non-semver tag fails the check step.
 
-Update P1 S7 acceptance (which names `NPM_TOKEN`) to trusted publishing when this lands.
+P1 S7 and *Distribution* already describe this flow (manual 0.1.0, then trusted publishing).
