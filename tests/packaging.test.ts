@@ -144,7 +144,7 @@ describe("npm packaging", () => {
     expect(release).not.toContain("packages/cli");
     expect(release).toContain("pack --pack-destination");
     expect(release).toContain(
-      'if npm view "${name}@${ver}" version >/dev/null 2>&1; then',
+      `if npm view "\${name}@\${ver}" version >/dev/null 2>&1; then`,
     );
     expect(release).toContain('npm publish "$pkgdest"/*.tgz');
     expect(release).toContain("--provenance");
