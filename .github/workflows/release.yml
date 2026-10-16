@@ -1,0 +1,47 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+      - name: Require a semver tag
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Refusing to publish '$GITHUB_REF_NAME'. Expected vMAJOR.MINOR.PATCH with an optional prerelease."
+            exit 1
+          fi
+      - name: Require package versions to match the tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for pkg in packages/formats packages/cli packages/player; do
+            ver="$(node -p "require('./${pkg}/package.json').version")"
+            if [[ "$ver" != "$tag" ]]; then
+              echo "::error::${pkg} version ${ver} does not match tag ${tag}"
+              exit 1
+            fi
+          done
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm -r run build
+      - run: pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
