@@ -4,7 +4,7 @@
 
 Yes. The established method is **lip-sync animation**: record the dialogue first, break the soundtrack into speech sounds called **phonemes**, and map groups of visually similar sounds to reusable drawings called **visemes**. You normally do **not** need one drawing per letter or even one per phoneme, because many sounds look identical on the lips.[^1][^2]
 
-For a practical drawn character, start with **six speaking mouth shapes plus one neutral/rest shape**. Add dedicated **F/V**, **L**, and **TH** poses only when the character design, camera distance, and desired quality make those details visible. Rhubarb’s widely used 2D scheme defines six basic poses, three optional poses, and timestamped output that selects a pose throughout the recording.[^3][^4]
+For this project the required kit is **eight drawings**: REST, MBP, CONS/EE, EH/AE, AH, OH/ER, OO/W, and FV. **L** and **TH** are optional and are drawn only when a line test shows the required kit cannot show that sound. Rhubarb’s letters A–F are its basic poses, G is FV, H is L, and X is rest; this project requires X and A–G.[^3][^4]
 
 ## Recommended mouth set
 
@@ -16,18 +16,14 @@ For a practical drawn character, start with **six speaking mouth shapes plus one
 | EH/AE | Medium, horizontally open | **E** in “men,” **A** in “cat” | Also works as a transition between closed and wide-open poses.[^3] |
 | AH | Wide open, jaw dropped | **AH/AA** as in “father” | Usually the largest jaw opening.[^3][^4] |
 | OH/ER | Rounded and somewhat open | **O/AW**, often **ER** | A bridge between open and tightly rounded poses.[^3] |
-| OO/W | Puckered or tightly rounded | **OO, U, W**, and some **OW** sounds | Make this visually different from AH and EE.[^3][^4] |
-| FV | Upper teeth on lower lip | **F, V** | Optional but gives a large quality improvement when the mouth is clearly visible.[^3] |
+| OO/W | Puckered or tightly rounded | **OO, U, W**, and some **OW** sounds | Make this visually different from AH and CONS/EE.[^3][^4] |
+| FV | Upper teeth on lower lip | **F, V** | Required in this project’s kit.[^3] |
 | L | Tongue behind upper teeth | **L** | Optional; useful mainly in close shots or a detailed style.[^3][^4] |
-| TH | Tongue briefly between teeth | **TH** | An extended pose rather than part of the minimal Hanna-Barbera/Rhubarb set.[^5][^7] |
+| TH | Tongue briefly between teeth | **TH** | Optional. Rhubarb has no TH letter, so this pose is placed with an override.[^5][^7] |
 
-This produces three useful production tiers:
+This project’s required kit is those eight drawings. L and TH stay optional.
 
-- **Very limited/cartoon style:** 4–5 speaking poses plus REST. Combine EH with AH, OH with OO, and use one general consonant pose.
-- **Recommended starting set:** 6 speaking poses plus REST.
-- **More polished close-up:** 9 speaking poses plus REST by adding FV, L, and TH.
-
-There is no universally correct number. Adobe Character Animator uses 11 audio-driven visemes plus three silent/expression states, Toon Boom’s standard chart uses six core labeled drawings, and some 3D systems use around 15 shape keys. More drawings increase setup and correction work; they do not automatically make the result more convincing.[^8][^9][^10]
+Other tools use different counts. Adobe Character Animator uses 11 audio-driven visemes plus three silent/expression states, Toon Boom’s standard chart uses six core labeled drawings, and some 3D systems use around 15 shape keys. Those counts are not this project’s kit. More drawings increase setup and correction work; they do not automatically make the result more convincing.[^8][^9][^10]
 
 ## Sounds, not letters
 
@@ -67,7 +63,7 @@ This is why exact one-to-one phoneme-to-viseme tables differ across tools and re
 
 ## Drawing the library
 
-Keep each pose registered to the same head so swapping drawings does not make the face jitter. Hold the upper teeth and skull relationship relatively stable, drive most vertical opening from the jaw, and check that extreme transitions—REST to AH, EE to OO, and AH to OO—still read as the same character.[^17]
+Keep each pose registered to the same head so swapping drawings does not make the face jitter. Hold the upper teeth and skull relationship relatively stable, drive most vertical opening from the jaw, and check that extreme transitions—REST to AH, CONS/EE to OO/W, and AH to OO/W—still read as the same character.[^17]
 
 Build the library in layers where possible:
 
@@ -83,72 +79,66 @@ Separating expression from speech avoids multiplying every combination. If the s
 
 | Tool/workflow | Mouth scheme | Best use |
 |---|---|---|
-| **Rhubarb Lip Sync** | 6 required, up to 9 including optional/rest shapes | Free command-line pipeline; exports timestamped TSV, XML, or JSON for custom software.[^3] |
+| **Rhubarb Lip Sync** | Letters A–H and X. This project requires X and A–G (eight drawings). H (`L`) and TH are optional. | Free command-line pipeline. JSON export is `{ metadata, mouthCues }` with letter values.[^3] |
 | **OpenToonz + Rhubarb** | Rhubarb-compatible set | Free 2D animation workflow with integrated automatic lip-sync support.[^19] |
 | **Toon Boom Harmony** | Standard six-pose A–F chart, with manual editing | Full 2D production and drawing-substitution workflow.[^9] |
 | **Adobe Character Animator** | 11 audio visemes plus neutral/expression states | Fast puppet animation from a microphone or prerecorded dialogue, followed by timeline correction.[^8][^20] |
 | **Custom application/game** | Usually 6–10 sprites or blend shapes | Generate timestamped JSON/TSV and switch sprites, or blend parameters for smoother 3D motion.[^3][^16] |
 
-For a custom TypeScript, React, canvas, or game-engine pipeline, a simple data representation is enough:
+For a custom TypeScript, React, canvas, or game-engine pipeline, store kit ids on a cue track. Rhubarb does not emit that track. `rhubarb --exportFormat json` writes letters:[^3]
+
+```json
+{
+  "metadata": {
+    "soundFile": "audio/intro-001.wav",
+    "duration": 1.86
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.05, "value": "X" },
+    { "start": 0.05, "end": 0.42, "value": "C" },
+    { "start": 0.42, "end": 0.70, "value": "F" }
+  ]
+}
+```
+
+`value` is a letter (`A`–`H` or `X`). TSV rows are `start<tab>letter`. Map `start` to `time`, map the letter to a kit id (A MBP, B CONS/EE, C EH/AE, D AH, E OH/ER, F OO/W, G FV, H L or EH/AE when the kit has no L, X REST), and drop `end`:
 
 ```json
 [
   { "time": 0.00, "shape": "REST" },
-  { "time": 0.18, "shape": "MBP" },
-  { "time": 0.25, "shape": "EH" },
-  { "time": 0.39, "shape": "OO" }
+  { "time": 0.05, "shape": "EH/AE" },
+  { "time": 0.42, "shape": "OO/W" }
 ]
 ```
 
-At playback time, binary-search the latest cue whose timestamp is not greater than the audio clock, then display that sprite. Use the audio element or engine audio clock—not a free-running animation timer—as the master clock, and permit an artist to override generated cues. Rhubarb already emits the same basic timestamp-plus-shape structure in TSV, XML, or JSON.[^3]
+At playback time, a per-frame callback samples the audio element’s `currentTime` (not the `timeupdate` event, and not a separate elapsed clock while audio is playing) and binary-searches the latest cue whose `time` is not greater than that sample. Before the first cue, and when reduced motion is requested, show REST. An override file can add, replace, or remove cues after the mapping.
 
 ## Practical starting recipe
 
-For a first test, draw **REST, MBP, CONS/EE, EH/AE, AH, OH/ER, OO/W, and FV**—eight drawings total. Record a 5–10 second line containing closed lips, wide vowels, rounded vowels, and F/V sounds; automatically or manually generate the cue track; then correct it by eye and ear.
+For a first test, draw the required eight: **REST, MBP, CONS/EE, EH/AE, AH, OH/ER, OO/W, and FV**. Do not draw L or TH for that test. Record a 5–10 second line containing closed lips, wide vowels, rounded vowels, and F/V sounds; generate the cue track from the audio; then correct it by eye and ear.
 
-Do not add more drawings until repeated testing reveals a specific missing distinction. If the dialogue still feels artificial, improve timing, holds, anticipation, expression, and head/eye acting before expanding the viseme library; those factors commonly matter more than matching every sound literally.[^13][^5]
+Add L or TH only when repeated testing shows the eight-shape kit cannot show that sound. If the dialogue still feels artificial, improve timing, holds, anticipation, expression, and head/eye acting before expanding the viseme library; those factors commonly matter more than matching every sound literally.[^13][^5]
 
 ---
 
-## References
-
-1. [CS205: Character Animator - Labs](https://www.labs.cs.uregina.ca/205/CharacterAnimator/) - [The] Visemes, are determined by audio. Visemes are visualizations of key mouth positions when sayin...
-
-2. [Development of Real-Time Lip Sync Animation Framework Based ...](https://aodr.org/_common/do.php?a=full&b=&bidx=230&aidx=2738) - A research on performing lip synching animation in real time is conducted and a framework is designe...
-
-3. [GitHub - DanielSWolf/rhubarb-lip-sync: Rhubarb Lip Sync is a ...](https://github.com/DanielSWolf/rhubarb-lip-sync) - The first six mouth shapes (Ⓐ-Ⓕ) are the basic mouth shapes and the absolute minimum you have to dra...
-
-4. [rhubarb-lip-sync/rhubarb/src/core/Shape.h at master ... - GitHub](https://github.com/DanielSWolf/rhubarb-lip-sync/blob/master/rhubarb/src/core/Shape.h) - // A set of mouth shapes. Rhubarb Lip Sync is a command-line tool that automatically creates 2D mout...
-
-5. [Extended Preston Blair phoneme series - Gary C. Martin](http://www.garycmartin.com/phoneme_examples.html) - This article covers a slightly extended range of phoneme mouth shapes, based originally on the Prest...
-
-6. [Viseme Variability: Gritted Teeth & Muted Speech - Face the FACS](https://melindaozel.com/viseme-variability-gritted-teeth-muted-speech/) - This post explores the intricacies of audio-to-face tech, visemes, and speech articulation … working...
-
-7. [Read My Lips: Facial Animation Techniques - Game Developer](https://www.gamedeveloper.com/programming/read-my-lips-facial-animation-techniques) - Disney animators relied on a chart of 12 archetypal mouth positions to represent speech as you can s...
-
-8. [Learn Character Animator - Creating mouth shapes - Adobe](https://www.adobe.com/learn/adobe-character-animator/web/lip-sync-mouth-shapes) - The other 11 are audio-based mouths called visemes and they'll show up when something is said. These...
-
-9. [Harmony 25 Essentials Documentation: Animating Lip-Sync](https://docs.toonboom.com/help/harmony-25/essentials/cut-out-animation/animate-lip-sync.html) - Click the Map button to open the Lip-Sync Mapping dialog box. From the Destination Layer menu, selec...
-
-10. [Lip sync - MakeHuman Community](https://static.makehumancommunity.org/mpfb/docs/lipsync/index.html) - How to set up lip sync animation in Blender for MPFB characters using facial shape keys and the thir...
-
-11. [Visual Breakdown | Toon Boom Learn Portal](http://learn.toonboom.com/modules/lip-sync-animation1/topic/visual-breakdown) - You need the sound file, so you can break down the dialogue into syllables and after that, turn thos...
-
-12. [Odds & Ends: Lip Syncing - After Effects & Animation (Spring 2017)](https://fmspracticumspring2017.blogs.bucknell.edu/2017/04/18/odds-ends-lip-syncing/) - To create a lip sync animation, you should start with a pre-recorded audio track – don't try to anim...
-
-13. [Lip Sync Like a Pro: Dialogue Animation & Performance - rmcad](https://www.rmcad.edu/blog/lip-sync-like-a-pro-dialogue-animation-performance/) - Phonemes for animation are individual speech sounds, and visemes are the mouth shapes that visually ...
-
-14. [Creating Speech-Synchronized Animation - IEEE Computer Society](https://www.computer.org/csdl/journal/tg/2005/03/v0341/13rRUxE04tq) - We also present a method to animate the facial model over time to create animated speech using a mod...
-
-15. [[PDF] VISUALLY CONSISTENT ACOUSTIC REDUBBING Sarah Taylor ...](https://la.disneyresearch.com/wp-content/uploads/A-Mouth-Full-of-Words-Visually-Consistent-Acoustic-Redubbing-Paper.pdf) - This paper introduces a method for automatic redubbing of video that exploits the many-to-many mappi...
-
-16. [Learning Audio-Driven Viseme Dynamics for 3D Face Animation](https://ar5iv.labs.arxiv.org/html/2301.06059) - We present a novel audio-driven facial animation approach that can generate realistic lip-synchroniz...
-
-17. [Lip Sync - Preston Blair phoneme series - natmax.com](http://www.natmax.com/ART292/Lip%20Sync%20-%20Preston%20Blair%20phoneme%20series.pdf) - I've revisited and updated the data several times since then - testing them on several different dia...
-
-18. [Animating LIP SYNC in TOON BOOM HARMONY | Tutorial | Part 24](https://www.youtube.com/watch?v=lisoZFfhBok) - ... official Toon Boom Harmony Discord server! https://discord.gg/toonboom If you found this video u...
-
-19. [Using Rhubarb with OpenToonz — OpenToonz 1.7.1 documentation](https://opentoonz.readthedocs.io/en/latest/using_rhubarb_with_opentoonz.html) - It can be used to provide automatic lip-sync capabilities inside OpenToonz, for that to be possible ...
-
-20. [Animated lip-syncing powered by Adobe AI](https://www.adobe.com/creativecloud/video/discover/animation-lip-sync.html) - You can use Adobe Sensei AI technology in Character Animator to assign mouth shapes, or visemes, to ...
+[^1]: [CS205: Character Animator - Labs](https://www.labs.cs.uregina.ca/205/CharacterAnimator/)
+[^2]: [Development of Real-Time Lip Sync Animation Framework Based on Viseme and Expression](https://aodr.org/_common/do.php?a=full&b=&bidx=230&aidx=2738)
+[^3]: [Rhubarb Lip Sync](https://github.com/DanielSWolf/rhubarb-lip-sync)
+[^4]: [Rhubarb Shape.h](https://github.com/DanielSWolf/rhubarb-lip-sync/blob/master/rhubarb/src/core/Shape.h)
+[^5]: [Extended Preston Blair phoneme series - Gary C. Martin](http://www.garycmartin.com/phoneme_examples.html)
+[^6]: [Viseme Variability: Gritted Teeth & Muted Speech - Face the FACS](https://melindaozel.com/viseme-variability-gritted-teeth-muted-speech/)
+[^7]: [Read My Lips: Facial Animation Techniques - Game Developer](https://www.gamedeveloper.com/programming/read-my-lips-facial-animation-techniques)
+[^8]: [Learn Character Animator - Creating mouth shapes - Adobe](https://www.adobe.com/learn/adobe-character-animator/web/lip-sync-mouth-shapes)
+[^9]: [Harmony 25 Essentials Documentation: Animating Lip-Sync](https://docs.toonboom.com/help/harmony-25/essentials/cut-out-animation/animate-lip-sync.html)
+[^10]: [Lip sync - MakeHuman Community](https://static.makehumancommunity.org/mpfb/docs/lipsync/index.html)
+[^11]: [Visual Breakdown | Toon Boom Learn Portal](http://learn.toonboom.com/modules/lip-sync-animation1/topic/visual-breakdown)
+[^12]: [Odds & Ends: Lip Syncing - After Effects & Animation (Spring 2017)](https://fmspracticumspring2017.blogs.bucknell.edu/2017/04/18/odds-ends-lip-syncing/)
+[^13]: [Lip Sync Like a Pro: Dialogue Animation & Performance - rmcad](https://www.rmcad.edu/blog/lip-sync-like-a-pro-dialogue-animation-performance/)
+[^14]: [Creating Speech-Synchronized Animation - IEEE Computer Society](https://www.computer.org/csdl/journal/tg/2005/03/v0341/13rRUxE04tq)
+[^15]: [A Mouth Full of Words: Visually Consistent Acoustic Redubbing](https://la.disneyresearch.com/wp-content/uploads/A-Mouth-Full-of-Words-Visually-Consistent-Acoustic-Redubbing-Paper.pdf)
+[^16]: [Learning Audio-Driven Viseme Dynamics for 3D Face Animation](https://ar5iv.labs.arxiv.org/html/2301.06059)
+[^17]: [Lip Sync - Preston Blair phoneme series](http://www.natmax.com/ART292/Lip%20Sync%20-%20Preston%20Blair%20phoneme%20series.pdf)
+[^18]: [Animating LIP SYNC in TOON BOOM HARMONY | Tutorial | Part 24](https://www.youtube.com/watch?v=lisoZFfhBok)
+[^19]: [Using Rhubarb with OpenToonz — OpenToonz 1.7.1 documentation](https://opentoonz.readthedocs.io/en/latest/using_rhubarb_with_opentoonz.html)
+[^20]: [Animated lip-syncing powered by Adobe AI](https://www.adobe.com/creativecloud/video/discover/animation-lip-sync.html)
 

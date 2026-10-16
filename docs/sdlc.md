@@ -10,7 +10,7 @@ plan (plans/Px-plan.md) --Bob approves--> steps --> one branch + one PR per step
    --> squash auto-merge  (or `needs-bob` label on round-3 failure)
 ```
 
-1. **Plan first.** Each milestone has a plan in `plans/`. No code is written for a milestone until Bob has approved its plan (gate `G0`). Deviations from the plan update the plan in the same PR.
+1. **Plan first.** Each milestone has a plan in `plans/`. No product code is written for a milestone until Bob has approved its plan (gate `G0`). A plan PR may add the workspace scaffold and the pure helpers its acceptance tests call when the plan’s CI contract requires them. Deviations from the plan update the plan in the same PR.
 2. **One branch, one PR per step.** Branch names: `<type>/<slug>` (e.g. `feat/tts-cache`). Commits use Conventional Commits. Nobody commits to `main` directly.
 3. **Built by cloud coding agents.** One agent per plan step, each in its own clone/branch. The agent runs `pnpm check` and puts the result (exit code, test counts, what was not verified) in the PR body together with the plan step id.
 4. **Review on every PR:**

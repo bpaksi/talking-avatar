@@ -4,4 +4,4 @@ Story-neutral tool that turns a tagged script and a cast (voice provider + voice
 
 Status: planning. See `docs/sdlc.md`, `docs/lip-sync-best-practices.md` and `plans/`.
 
-Releases will be published to npm. License: MIT.
+Package manager: pnpm. `pnpm check` runs lint, typecheck, and tests. Releases of the workspace packages are published to npm. License: MIT.
