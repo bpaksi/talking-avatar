@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   anchorSchema,
+  DEFAULT_MOUTH_MODE,
+  effectiveMouthMode,
   isAvatarRelativePath,
+  isMouthMode,
   mouthFileName,
   mouthModeSchema,
 } from "./avatar.js";
@@ -36,6 +39,19 @@ describe("asset contract schemas", () => {
     );
     expect(mouthModeSchema.safeParse("overlay").success).toBe(true);
     expect(mouthModeSchema.safeParse("sprite").success).toBe(false);
+  });
+
+  it("defaults mouthMode only when it is undefined", () => {
+    expect(effectiveMouthMode({})).toBe(DEFAULT_MOUTH_MODE);
+    expect(effectiveMouthMode({ mouthMode: undefined })).toBe(
+      DEFAULT_MOUTH_MODE,
+    );
+    expect(effectiveMouthMode({ mouthMode: "overlay" })).toBe("overlay");
+    expect(effectiveMouthMode({ mouthMode: "frame" })).toBe("frame");
+    expect(effectiveMouthMode({ mouthMode: "sprite" })).toBe("sprite");
+    expect(effectiveMouthMode({ mouthMode: null })).toBeNull();
+    expect(isMouthMode("frame")).toBe(true);
+    expect(isMouthMode("sprite")).toBe(false);
   });
 
   it("names mouth files without the slash", () => {

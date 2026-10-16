@@ -1,14 +1,14 @@
 name: release
 
-# Manual only. 0.1.0 of formats and player is published by hand (Track A
-# step 4), so a tag push must start nothing. Step 6 replaces this workflow
-# with npm trusted publishing and the tag trigger.
+# Manual only. Publishes @talking-avatar/formats then @talking-avatar/player
+# via npm trusted publishing (GitHub OIDC, workflow release.yml, no environment).
+# 0.1.0 was published by hand; this job does not use a registry secret.
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
-  id-token: write # npm provenance
+  id-token: write
 
 jobs:
   publish:
@@ -18,31 +18,44 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 10.33.4
-      - uses: actions/setup-node@v4
+      # v6 + registry-url, with no registry auth env: npm can use OIDC.
+      # v4 wrote an empty auth-token line that skipped the token exchange.
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
           cache: pnpm
-      - name: Require a semver tag
+      - name: Ensure npm >= 11.5.1 for trusted publishing
+        run: npm install -g npm@11.5.1
+      - name: Require formats and player versions to match
         run: |
-          if [[ ! "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
-            echo "::error::Refusing to publish '$GITHUB_REF_NAME'. Expected vMAJOR.MINOR.PATCH with an optional prerelease."
-            exit 1
-          fi
-      - name: Require package versions to match the tag
-        run: |
-          tag="${GITHUB_REF_NAME#v}"
-          for pkg in packages/formats packages/cli packages/player; do
+          expected=""
+          for pkg in packages/formats packages/player; do
             ver="$(node -p "require('./${pkg}/package.json').version")"
-            if [[ "$ver" != "$tag" ]]; then
-              echo "::error::${pkg} version ${ver} does not match tag ${tag}"
+            if [[ ! "$ver" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo "::error::${pkg} version '${ver}' is not MAJOR.MINOR.PATCH with an optional prerelease."
+              exit 1
+            fi
+            if [[ -z "$expected" ]]; then
+              expected="$ver"
+            elif [[ "$ver" != "$expected" ]]; then
+              echo "::error::${pkg} version ${ver} does not match ${expected}"
               exit 1
             fi
           done
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm -r run build
-      - run: pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+      - name: Publish formats then player with provenance
+        run: |
+          set -euo pipefail
+          dest="${RUNNER_TEMP}/npm-tarballs"
+          mkdir -p "$dest"
+          # pnpm pack rewrites workspace:* to the real version (pnpm workspace
+          # protocol). npm publish of the tarball is the OIDC path (npm >= 11.5.1);
+          # pnpm 10 still shells publish out to npm and is not relied on here.
+          for pkg in packages/formats packages/player; do
+            tarball="$(node -p "const m=require('./${pkg}/package.json'); m.name.replaceAll('@','').replaceAll('/','-') + '-' + m.version + '.tgz'")"
+            pnpm --filter "./${pkg}" pack --pack-destination "$dest"
+            npm publish "${dest}/${tarball}" --access public --provenance
+          done

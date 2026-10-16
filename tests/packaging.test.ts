@@ -62,7 +62,11 @@ describe("npm packaging", () => {
       expect(manifest.license).toBe("MIT");
       expect(manifest.files).toEqual(["dist", "LICENSE"]);
       expect(manifest.types).toBe("./dist/index.d.ts");
-      expect(manifest.publishConfig?.access).toBe("public");
+      if (name === "cli") {
+        expect(manifest.publishConfig?.access).toBeUndefined();
+      } else {
+        expect(manifest.publishConfig?.access).toBe("public");
+      }
       expect(manifest.publishConfig?.types).toBe("./dist/index.d.ts");
       expect(JSON.stringify(manifest.publishConfig?.exports)).not.toContain(
         "development",
@@ -92,6 +96,7 @@ describe("npm packaging", () => {
     }
     const cli = readJson(resolve(root, "packages/cli/package.json"));
     expect(cli.private).toBe(true);
+    expect(cli.publishConfig?.access).toBeUndefined();
     const player = readJson(resolve(root, "packages/player/package.json"));
     expect(player.dependencies?.["@talking-avatar/formats"]).toBe(
       "workspace:*",
@@ -101,7 +106,7 @@ describe("npm packaging", () => {
     expect(player.dependencies?.react).toBeUndefined();
   });
 
-  it("publishes only workspace packages, and never from a tag push until trusted publishing", () => {
+  it("publishes formats then player via OIDC, never from a tag push", () => {
     const release = readFileSync(
       resolve(root, ".github/workflows/release.yml"),
       "utf8",
@@ -114,15 +119,39 @@ describe("npm packaging", () => {
     expect(release).toMatch(/^on:\n {2}workflow_dispatch:\n/m);
     expect(release).not.toMatch(/^\s*(push|tags|pull_request|release):/m);
     expect(release).not.toContain('"v*"');
+    expect(release).toContain("id-token: write");
+    expect(release).toContain("contents: read");
+    expect(release).toContain("actions/setup-node@v6");
+    expect(release).toContain("registry-url: https://registry.npmjs.org");
+    expect(release).toContain("npm@11.5.1");
     expect(release).toContain(
-      "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$",
+      "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$",
     );
     expect(release).toContain(
-      'pnpm -r --filter "./packages/*" publish --provenance --access public --no-git-checks',
+      "for pkg in packages/formats packages/player; do",
     );
+    expect(release).not.toContain("packages/cli");
+    expect(release).toContain("pack --pack-destination");
+    expect(release).toContain("npm publish");
+    expect(release).toContain("--provenance");
+    expect(release).not.toContain("NODE_AUTH_TOKEN");
+    expect(release).not.toContain("NPM_TOKEN");
     expect(release).not.toContain("pnpm -r publish");
     expect(check).toContain("version: 10.33.4");
     expect(check).toContain("pnpm install --frozen-lockfile");
     expect(check).toContain("pnpm check");
+  });
+
+  it("keeps use client on the player package entry in src and dist", () => {
+    const src = readFileSync(
+      resolve(root, "packages/player/src/index.ts"),
+      "utf8",
+    );
+    expect(src.startsWith('"use client";')).toBe(true);
+    const dist = readFileSync(
+      resolve(root, "packages/player/dist/index.js"),
+      "utf8",
+    );
+    expect(/^["']use client["'];/.test(dist)).toBe(true);
   });
 });
