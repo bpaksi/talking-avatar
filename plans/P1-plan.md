@@ -10,6 +10,14 @@ Scripts, art and voices always live in the **consuming project**, never in this 
 
 Background and rationale for the mouth set, timing and playback rules: [docs/lip-sync-best-practices.md](../docs/lip-sync-best-practices.md).
 
+## First slice (S2 + thin S5, early 0.1.0)
+
+Order changed for a first consumer (Bloodtower): S2, then a thin S5, then an early 0.1.0 publish of `@talking-avatar/formats` and `@talking-avatar/player` (S7 moved earlier; `@talking-avatar/cli` ships later). The slice uses the [asset contract v1](../docs/asset-contract.md). First publish is manual; later releases use npm trusted publishing (GitHub OIDC, no `NPM_TOKEN`).
+
+- [docs/asset-contract.md](../docs/asset-contract.md)
+- [docs/handoff/track-a-player.md](../docs/handoff/track-a-player.md)
+- [docs/handoff/track-b-bloodtower.md](../docs/handoff/track-b-bloodtower.md)
+
 ## Settled decisions (G0 answers)
 
 - **License:** MIT. The repo has a `LICENSE` file (copyright `talking-avatar contributors`, 2026) and every `package.json` sets `"license": "MIT"`.
