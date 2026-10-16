@@ -192,7 +192,7 @@ export async function validateAvatar(dir: string): Promise<AvatarIssue[]> {
 
   // Rule 8: mouth image sizes for the effective mode. An unknown mode is
   // already reported by the schema and leaves nothing to size against.
-  const mode = effectiveMouthMode(raw as { mouthMode?: MouthMode });
+  const mode = effectiveMouthMode(raw);
   if ((MOUTH_MODES as readonly unknown[]).includes(mode) && portraitFound) {
     await checkMouthSizes({
       root,

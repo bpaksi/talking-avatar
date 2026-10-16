@@ -81,9 +81,9 @@ export type AvatarLine = z.infer<typeof avatarLineSchema>;
 export type AvatarManifest = z.infer<typeof avatarManifestSchema>;
 
 export function effectiveMouthMode(manifest: {
-  mouthMode?: MouthMode | undefined;
+  mouthMode?: unknown;
 }): MouthMode {
-  return manifest.mouthMode ?? DEFAULT_MOUTH_MODE;
+  return (manifest.mouthMode as MouthMode | undefined) ?? DEFAULT_MOUTH_MODE;
 }
 
 /** File name of a shape id (`CONS/EE` -> `CONS-EE`); shape ids in JSON keep the `/`. */
