@@ -51,4 +51,4 @@ pnpm --filter @talking-avatar/player example          # http://localhost:5173
 pnpm --filter @talking-avatar/player example --host   # reachable from an iPad on the same network
 ```
 
-It plays the Keeper fixture from `@talking-avatar/formats` (placeholder art and voice). Each mouth frame is labelled with its shape name.
+It plays the Keeper fixture from `@talking-avatar/formats` (placeholder art and voice). Shape names are painted into the generated mouth PNGs; the player does not label frames.

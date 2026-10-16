@@ -80,10 +80,19 @@ export type Anchor = z.infer<typeof anchorSchema>;
 export type AvatarLine = z.infer<typeof avatarLineSchema>;
 export type AvatarManifest = z.infer<typeof avatarManifestSchema>;
 
+export function isMouthMode(value: unknown): value is MouthMode {
+  return (MOUTH_MODES as readonly unknown[]).includes(value);
+}
+
 export function effectiveMouthMode(manifest: {
-  mouthMode?: unknown;
-}): MouthMode {
-  return (manifest.mouthMode as MouthMode | undefined) ?? DEFAULT_MOUTH_MODE;
+  mouthMode?: MouthMode;
+}): MouthMode;
+export function effectiveMouthMode(manifest: { mouthMode?: unknown }): unknown;
+export function effectiveMouthMode(manifest: { mouthMode?: unknown }): unknown {
+  if (manifest.mouthMode === undefined) {
+    return DEFAULT_MOUTH_MODE;
+  }
+  return manifest.mouthMode;
 }
 
 /** File name of a shape id (`CONS/EE` -> `CONS-EE`); shape ids in JSON keep the `/`. */

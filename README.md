@@ -8,4 +8,4 @@ Status: 0.1.0 of [`@talking-avatar/formats`](packages/formats/README.md) (schema
 pnpm add @talking-avatar/formats@0.1.0 @talking-avatar/player@0.1.0
 ```
 
-Package manager: pnpm. `pnpm check` runs lint, typecheck, and tests. Releases of the workspace packages are published to npm. License: MIT.
+Package manager: pnpm. `pnpm check` runs lint, typecheck, and tests. To release: bump `formats` and `player` to the same version, merge to `main`, and run the Release workflow. See [docs/releasing.md](docs/releasing.md). License: MIT.

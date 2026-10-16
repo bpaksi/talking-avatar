@@ -9,7 +9,7 @@ import {
   avatarManifestSchema,
   effectiveMouthMode,
   isAvatarRelativePath,
-  MOUTH_MODES,
+  isMouthMode,
   type MouthMode,
 } from "./avatar.js";
 import { type PngInfo, readPngInfo } from "./png.js";
@@ -193,7 +193,7 @@ export async function validateAvatar(dir: string): Promise<AvatarIssue[]> {
   // Rule 8: mouth image sizes for the effective mode. An unknown mode is
   // already reported by the schema and leaves nothing to size against.
   const mode = effectiveMouthMode(raw);
-  if ((MOUTH_MODES as readonly unknown[]).includes(mode) && portraitFound) {
+  if (isMouthMode(mode) && portraitFound) {
     await checkMouthSizes({
       root,
       mode,

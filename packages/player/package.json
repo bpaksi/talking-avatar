@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "<TalkingAvatar> React player for talking-avatar character folders.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpaksi/talking-avatar.git",
+    "directory": "packages/player"
+  },
   "type": "module",
   "engines": {
     "node": ">=22"
