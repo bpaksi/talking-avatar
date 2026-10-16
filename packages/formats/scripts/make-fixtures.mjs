@@ -524,6 +524,11 @@ const INVALID = {
     f.mouthSize = (file) =>
       file === "mouths/AH.png" ? [MW / 2, MH / 2] : [MW, MH];
   },
+  "wrong-mouth-size-default-mode": (f) => {
+    delete f.manifest.mouthMode;
+    f.mouthSize = (file) =>
+      file === "mouths/AH.png" ? [MW / 2, MH / 2] : [MW, MH];
+  },
   "unknown-mouth-mode": (f) => {
     f.manifest.mouthMode = "sprite";
   },
@@ -542,7 +547,11 @@ const INVALID = {
 };
 
 function makeMinimal() {
-  minimal(join(FIXTURES, "minimal", "frame", "keeper"));
+  minimal(join(FIXTURES, "minimal", "frame", "keeper"), {
+    mutate: (f) => {
+      delete f.manifest.mouthMode;
+    },
+  });
   minimal(join(FIXTURES, "minimal", "overlay", "keeper"), {
     mouthMode: "overlay",
   });

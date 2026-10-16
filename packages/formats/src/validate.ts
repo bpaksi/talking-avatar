@@ -7,6 +7,7 @@ import {
   type AvatarRule,
   anchorSchema,
   avatarManifestSchema,
+  effectiveMouthMode,
   isAvatarRelativePath,
   MOUTH_MODES,
   type MouthMode,
@@ -191,11 +192,11 @@ export async function validateAvatar(dir: string): Promise<AvatarIssue[]> {
 
   // Rule 8: mouth image sizes for the effective mode. An unknown mode is
   // already reported by the schema and leaves nothing to size against.
-  const mode = raw.mouthMode === undefined ? "frame" : raw.mouthMode;
+  const mode = effectiveMouthMode(raw as { mouthMode?: MouthMode });
   if ((MOUTH_MODES as readonly unknown[]).includes(mode) && portraitFound) {
     await checkMouthSizes({
       root,
-      mode: mode as MouthMode,
+      mode,
       portraitPath: portraitPath as string,
       mouthPaths: foundMouths,
       anchor,

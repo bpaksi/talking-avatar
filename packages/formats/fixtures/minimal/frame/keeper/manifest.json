@@ -3,7 +3,6 @@
   "name": "Minimal Keeper",
   "portrait": "portrait.png",
   "anchor": "anchor.json",
-  "mouthMode": "frame",
   "mouths": {
     "X": "mouths/REST.png",
     "A": "mouths/MBP.png",

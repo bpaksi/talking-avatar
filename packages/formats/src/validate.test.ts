@@ -19,7 +19,15 @@ describe("validateAvatar: valid folders", () => {
     expect(await validateAvatar(fixture("minimal/overlay/keeper"))).toEqual([]);
   });
 
-  it("parses the Keeper manifest, defaulting mouthMode to frame", () => {
+  it("accepts a valid folder when mouthMode is omitted", async () => {
+    const manifest = JSON.parse(
+      readFileSync(fixture("minimal/frame/keeper/manifest.json"), "utf8"),
+    ) as { mouthMode?: unknown };
+    expect(manifest.mouthMode).toBeUndefined();
+    expect(await validateAvatar(fixture("minimal/frame/keeper"))).toEqual([]);
+  });
+
+  it("parses the Keeper line ids and treats omitted mouthMode as frame", () => {
     const manifest = avatarManifestSchema.parse(
       JSON.parse(readFileSync(fixture("keeper/manifest.json"), "utf8")),
     );
@@ -46,6 +54,7 @@ const NEGATIVE: Record<string, Expected> = {
   "overlapping-cues": { rule: 6, file: `lines/${LINE}.json`, lineId: LINE },
   "empty-caption-theme": { rule: 7, file: "manifest.json" },
   "wrong-mouth-size": { rule: 8, file: "mouths/AH.png" },
+  "wrong-mouth-size-default-mode": { rule: 8, file: "mouths/AH.png" },
   "unknown-mouth-mode": { rule: 8, file: "manifest.json" },
   "overlay-no-alpha": { rule: 8, file: "mouths/REST.png" },
   "overlay-wrong-size": { rule: 8, file: "mouths/REST.png" },
