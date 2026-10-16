@@ -10,8 +10,8 @@ Goal: ship `@talking-avatar/formats` and `@talking-avatar/player` 0.1.0 early so
 - Touches: `packages/formats/**`, `packages/formats/fixtures/keeper/**`
 - Work:
   - Zod schemas + TS types for `manifest.json` (including optional `mouthMode`, default `"frame"`), `anchor.json`, Rhubarb JSON, per the contract.
-  - `validateAvatar(dir)` (Node) applying contract rules 1–8; returns a list of errors with file and `line_id`.
-  - Fixture set: a `keeper` folder in contract layout with `mouthMode: "frame"`, built from small generated placeholder images and audio. No real Bloodtower art, audio or script (P1: consumer assets never live in this repo). Add negative fixtures: missing letter, missing file, duplicate `line_id`, anchor out of range, bad cue letter, overlapping cues, a mouth image of the wrong size for its `mouthMode`, an unknown `mouthMode`.
+  - `validateAvatar(dir)` (Node) applying contract rules 1–10; returns a list of errors with file and `line_id`.
+  - Fixture set: a `keeper` folder in contract layout with `mouthMode: "frame"`, built from small generated placeholder images and audio. No real Bloodtower art, audio or script (P1: consumer assets never live in this repo). Add negative fixtures: missing letter, missing file, duplicate `line_id`, anchor out of range, bad cue letter, overlapping cues, a mouth image of the wrong size for its `mouthMode`, an unknown `mouthMode`, empty `captionTheme`, missing `text`, `id` not equal to the folder name, an absolute path.
 - Acceptance:
   - `pnpm check` green.
   - Keeper fixture validates with zero errors.
@@ -23,14 +23,14 @@ Goal: ship `@talking-avatar/formats` and `@talking-avatar/player` 0.1.0 early so
 - Touches: `packages/player/**`
 - Work: `<TalkingAvatar manifest={...} lineId="ts-keeper-001" onEnd={() => {}} />`
   - Plays the line's `.m4a` in an `<audio>` element.
-  - Per frame (requestAnimationFrame), samples `audio.currentTime`, binary-searches the latest cue at or before it, shows that letter's mouth. `REST` before the first cue and after end.
+  - Per frame (requestAnimationFrame), samples `audio.currentTime`, binary-searches the latest cue at or before it, shows that letter's mouth. `REST` before the first cue and once audio has ended. While audio still plays past the last cue, hold that cue's value until its `end`, then `REST`.
   - `mouthMode: "frame"` (the slice): each mouth file is a full portrait, so the player swaps the whole image in the portrait's box and it scales with the portrait. `overlay` (mouth drawn into the anchor box, fractions → % positioning) can wait until a kit needs it.
   - Preloads all mouth images; no network calls during playback beyond the audio.
   - Basic caption: line `text` with `[pause N]` stripped. Themes later (`captionTheme` ignored for now).
   - Calls `onEnd` when audio ends.
   - Resolves paths relative to a base URL (prop `baseUrl`, e.g. `/avatars/keeper/`).
 - Acceptance:
-  - Unit tests for cue lookup (start, between cues, seek, after end).
+  - Unit tests for cue lookup (start, between cues, seek, past the last cue's `end` while audio remains, after audio has ended).
   - Example page plays the Keeper fixture with synced mouths in desktop Safari and iPad Safari (audio starts from a user tap).
   - `pnpm check` green.
 

@@ -110,12 +110,14 @@ Times are seconds. `metadata.soundFile` is informational; use a relative name, n
 
 1. All 9 letters `X A B C D E F G H` are mapped in `mouths`.
 2. Every referenced file exists: portrait, anchor, each mouth, each line's audio and timing.
-3. Each `line_id` is unique and has both `audio` and `timing`.
+3. Each `line_id` is unique and has `audio`, `timing`, and `text`.
 4. `anchor.x`, `y`, `w`, `h` are numbers in `0..1`.
 5. Every cue `value` is one of `A B C D E F G H X`.
 6. Cues are in order with no overlap: each cue has `start <= end`, and each cue's `start >=` the previous cue's `end`.
 7. `captionTheme`, if present, is a non-empty string.
-8. `mouthMode`, if present, is `"frame"` or `"overlay"`, and every mouth image has the size that mode requires (see *Mouth mode*).
+8. `mouthMode` is `"frame"` or `"overlay"` if present; if omitted it defaults to `"frame"`. Every mouth image is size-checked for the effective mode (omitted is checked as `"frame"`; see *Mouth mode*).
+9. `id` equals the folder name.
+10. Every path in `manifest.json` is relative to `avatars/<id>/`. No absolute paths.
 
 Errors name the file and `line_id`.
 
