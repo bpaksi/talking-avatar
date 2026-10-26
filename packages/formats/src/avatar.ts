@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { RHUBARB_LETTERS, type RhubarbLetter } from "./rhubarb.js";
 
-// Asset contract v1 (docs/asset-contract.md): one character folder,
+// Asset contract v2 (docs/asset-contract.md): one character folder,
 // avatars/<id>/, described by manifest.json. These schemas are browser-safe;
 // the file checks live in validateAvatar (@talking-avatar/formats/node).
 
@@ -95,7 +95,13 @@ export function effectiveMouthMode(manifest: { mouthMode?: unknown }): unknown {
   return manifest.mouthMode;
 }
 
-/** File name of a shape id (`CONS/EE` -> `CONS-EE`); shape ids in JSON keep the `/`. */
-export function mouthFileName(shape: string): string {
-  return `${shape.replaceAll("/", "-")}.png`;
+/**
+ * File name of a shape id (`CONS/EE` -> `CONS-EE.webp`); shape ids in JSON keep the `/`.
+ * Contract v2 prefers WebP; pass `"png"` for PNG art.
+ */
+export function mouthFileName(
+  shape: string,
+  extension: "webp" | "png" = "webp",
+): string {
+  return `${shape.replaceAll("/", "-")}.${extension}`;
 }

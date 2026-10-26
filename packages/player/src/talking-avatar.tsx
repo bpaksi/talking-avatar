@@ -20,7 +20,7 @@ import { assetUrl, captionFor, mouthFiles } from "./assets.js";
 import { createMouthClock, type MouthCue, REST_LETTER } from "./cues.js";
 
 export type TalkingAvatarProps = {
-  /** A parsed `manifest.json` (asset contract v1). */
+  /** A parsed `manifest.json` (asset contract v2). */
   manifest: AvatarManifest;
   /** The line to play; changing it plays the next line on the same audio element. */
   lineId: string;

@@ -12,7 +12,7 @@ import {
   isMouthMode,
   type MouthMode,
 } from "./avatar.js";
-import { type PngInfo, readPngInfo } from "./png.js";
+import { type ImageInfo, readImageInfo } from "./image.js";
 import { RHUBARB_LETTERS } from "./rhubarb.js";
 import { rhubarbJsonSchema } from "./schemas.js";
 
@@ -77,7 +77,7 @@ async function isFile(path: string): Promise<boolean> {
 }
 
 /**
- * Validates one character folder (`avatars/<id>/`) against asset contract v1
+ * Validates one character folder (`avatars/<id>/`) against asset contract v2
  * rules 1–10. Returns every problem found; an empty list means the folder is valid.
  */
 export async function validateAvatar(dir: string): Promise<AvatarIssue[]> {
@@ -267,14 +267,14 @@ async function checkTiming(
   }
 }
 
-async function readPng(
+async function readImage(
   root: string,
   path: string,
   push: (issue: AvatarIssue) => void,
-): Promise<PngInfo | undefined> {
-  const info = readPngInfo(new Uint8Array(await readFile(join(root, path))));
+): Promise<ImageInfo | undefined> {
+  const info = readImageInfo(new Uint8Array(await readFile(join(root, path))));
   if (info === null) {
-    push({ rule: 8, file: path, message: `${path} is not a PNG` });
+    push({ rule: 8, file: path, message: `${path} is not a PNG or WebP` });
     return undefined;
   }
   return info;
@@ -289,10 +289,10 @@ async function checkMouthSizes(args: {
   push: (issue: AvatarIssue) => void;
 }): Promise<void> {
   const { root, mode, push } = args;
-  const portrait = await readPng(root, args.portraitPath, push);
+  const portrait = await readImage(root, args.portraitPath, push);
   if (portrait === undefined) return;
   for (const path of args.mouthPaths) {
-    const mouth = await readPng(root, path, push);
+    const mouth = await readImage(root, path, push);
     if (mouth === undefined) continue;
     if (mode === "frame") {
       if (mouth.width !== portrait.width || mouth.height !== portrait.height) {
@@ -308,7 +308,7 @@ async function checkMouthSizes(args: {
       push({
         rule: 8,
         file: path,
-        message: 'mouthMode "overlay" needs a transparent PNG',
+        message: 'mouthMode "overlay" needs a transparent PNG or WebP',
       });
     }
     if (args.anchor === undefined) continue;

@@ -38,6 +38,7 @@ export {
   type WordTiming,
 } from "./captions.js";
 export { buildCueTrack } from "./cue-track.js";
+export { type ImageInfo, readImageInfo } from "./image.js";
 export { captionOnlyLine } from "./line.js";
 export { applyOverrides, type OverridesFile } from "./overrides.js";
 export {
@@ -89,3 +90,4 @@ export {
   SHAPE_IDS,
   type ShapeId,
 } from "./shapes.js";
+export { readWebpInfo, type WebpInfo } from "./webp.js";

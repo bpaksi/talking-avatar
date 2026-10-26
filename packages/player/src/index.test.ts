@@ -103,6 +103,9 @@ describe("assets and captions", () => {
     expect(assetUrl("/avatars/keeper", "./portrait.png")).toBe(
       "/avatars/keeper/portrait.png",
     );
+    expect(assetUrl("/avatars/keeper/", "mouths/AH.webp")).toBe(
+      "/avatars/keeper/mouths/AH.webp",
+    );
   });
 
   it("strips pause markup from captions, even malformed markup", () => {
@@ -116,6 +119,13 @@ describe("assets and captions", () => {
     expect(
       mouthFiles({ B: "m/CONS-EE.png", H: "m/CONS-EE.png", X: "m/REST.png" }),
     ).toEqual(["m/CONS-EE.png", "m/REST.png"]);
+    expect(
+      mouthFiles({
+        B: "m/CONS-EE.webp",
+        H: "m/CONS-EE.webp",
+        X: "m/REST.webp",
+      }),
+    ).toEqual(["m/CONS-EE.webp", "m/REST.webp"]);
   });
 
   it("keeps the 0.0.0 playback helpers", () => {

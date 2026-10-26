@@ -2,7 +2,13 @@
 
 ## 0.1.0 — unreleased
 
-First release of `@talking-avatar/formats` and `@talking-avatar/player`, for the first consumer (Bloodtower). Follows [asset contract v1](docs/asset-contract.md). `@talking-avatar/cli` is not published yet (`"private": true`).
+### Contract v2: WebP portrait and mouths
+
+- `portrait` and `mouths/*` may be `.webp` or `.png` (WebP preferred for shipped art; it keeps transparency for overlay mode). PNG masters stay in git-ignored `masters/`.
+- `@talking-avatar/formats`: `validateAvatar` size and alpha checks accept WebP; new `readWebpInfo` and `readImageInfo` (PNG or WebP); `mouthFileName(shape, extension = "webp")`.
+- `@talking-avatar/player`: no loader change; paths are used as given, so `.webp` works.
+
+First release of `@talking-avatar/formats` and `@talking-avatar/player`, for the first consumer (Bloodtower). Follows [asset contract v2](docs/asset-contract.md). `@talking-avatar/cli` is not published yet (`"private": true`).
 
 ### @talking-avatar/formats
 
