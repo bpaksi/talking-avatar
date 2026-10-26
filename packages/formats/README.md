@@ -6,9 +6,9 @@ Schemas, types and helpers for talking-avatar files. MIT license.
 pnpm add @talking-avatar/formats@0.1.0
 ```
 
-## Character folders (asset contract v1)
+## Character folders (asset contract v2)
 
-[docs/asset-contract.md](https://github.com/bpaksi/talking-avatar/blob/main/docs/asset-contract.md) defines the folder: `manifest.json`, `portrait.png`, `anchor.json`, `mouths/*.png`, and `lines/<line_id>.m4a` plus Rhubarb `lines/<line_id>.json`.
+[docs/asset-contract.md](https://github.com/bpaksi/talking-avatar/blob/main/docs/asset-contract.md) defines the folder: `manifest.json`, `portrait.webp` (or `.png`), `anchor.json`, `mouths/*.webp` (or `.png`), and `lines/<line_id>.m4a` plus Rhubarb `lines/<line_id>.json`. The validator reads size and alpha from both PNG and WebP (`readImageInfo`, `readPngInfo`, `readWebpInfo`).
 
 ```ts
 // Browser-safe: schemas and types.

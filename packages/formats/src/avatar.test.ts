@@ -55,8 +55,9 @@ describe("asset contract schemas", () => {
   });
 
   it("names mouth files without the slash", () => {
-    expect(mouthFileName("CONS/EE")).toBe("CONS-EE.png");
-    expect(mouthFileName("AH")).toBe("AH.png");
+    expect(mouthFileName("CONS/EE")).toBe("CONS-EE.webp");
+    expect(mouthFileName("AH")).toBe("AH.webp");
+    expect(mouthFileName("CONS/EE", "png")).toBe("CONS-EE.png");
   });
 
   it("accepts touching cues and rejects overlap or reversed cues (rule 6)", () => {

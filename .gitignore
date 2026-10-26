@@ -3,3 +3,6 @@ dist/
 coverage/
 *.tgz
 .DS_Store
+
+# Artist masters (WAV, PNG) are not committed or shipped
+masters/
