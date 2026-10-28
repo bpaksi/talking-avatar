@@ -1,6 +1,6 @@
 # P2 plan: talking-avatar becomes asset-studio
 
-Status: **draft, waiting for Bob's approval (G0)**
+Status: **approved by Bob (G0 passed), 2026-10-28**, including the job contract and the camera move list. No code yet: no step starts until Bob says so.
 
 ## Goal
 
@@ -94,6 +94,7 @@ sounds:
 - Depends on: none
 - Touches: plans/P2-asset-studio.md
 - Acceptance: approval is recorded here. That approval covers the proposed job contract and the camera move list.
+- Result: Bob approved on 2026-10-28, with no code changes yet.
 
 ### S1: Rename to asset-studio
 - Depends on: G0, B1 (Bob's setup, below)
